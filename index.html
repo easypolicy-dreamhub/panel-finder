@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panel Finder — Hospitals &amp; Specialists</title>
+<style>
+  :root{
+    --ink:#2b1414;
+    --paper:#f7f3ef;
+    --card:#ffffff;
+    --line:#e3d4cd;
+    --teal:#8f2a2a;
+    --teal-deep:#5c1a1a;
+    --amber:#b5651d;
+    --muted:#6b5a56;
+    --radius:10px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:"Iowan Old Style","Palatino Linotype",Georgia,serif;
+    line-height:1.4;
+    -webkit-font-smoothing:antialiased;
+  }
+  .sans{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;}
+
+  header{
+    background:var(--teal-deep);
+    color:#f2efe4;
+    padding:20px 18px 22px;
+    position:sticky;
+    top:0;
+    z-index:20;
+  }
+  header h1{
+    margin:0 0 2px;
+    font-size:1.35rem;
+    font-weight:600;
+    letter-spacing:0.2px;
+  }
+  header p{
+    margin:0;
+    font-size:0.85rem;
+    color:#c7d9d3;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+
+  .tabs{
+    display:flex;
+    gap:0;
+    margin:14px 0 0;
+    border-radius:999px;
+    background:rgba(255,255,255,0.1);
+    padding:4px;
+  }
+  .tab-btn{
+    flex:1;
+    border:none;
+    background:transparent;
+    color:#dce8e4;
+    padding:9px 6px;
+    font-size:0.88rem;
+    border-radius:999px;
+    cursor:pointer;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    font-weight:600;
+    transition:background .15s ease, color .15s ease;
+  }
+  .tab-btn.active{
+    background:#f2efe4;
+    color:var(--teal-deep);
+  }
+
+  main{
+    max-width:640px;
+    margin:0 auto;
+    padding:16px 14px 60px;
+  }
+
+  .controls{
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+    margin-bottom:14px;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  .search-row{display:flex; gap:8px;}
+  input[type="search"], select{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    font-size:0.95rem;
+    padding:10px 12px;
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    background:var(--card);
+    color:var(--ink);
+    width:100%;
+  }
+  input[type="search"]{flex:1;}
+  select{max-width:150px;}
+
+  .locate-btn{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:7px;
+    padding:10px 14px;
+    border-radius:var(--radius);
+    border:1px solid var(--teal);
+    background:var(--card);
+    color:var(--teal-deep);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    font-weight:600;
+    font-size:0.9rem;
+    cursor:pointer;
+  }
+  .locate-btn.on{background:var(--teal); color:#fff;}
+  .locate-btn:active{opacity:.8;}
+
+  .status-line{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    font-size:0.78rem;
+    color:var(--muted);
+    padding:0 2px;
+  }
+
+  .count-line{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    font-size:0.78rem;
+    color:var(--muted);
+    margin:0 0 10px 2px;
+  }
+
+  .card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:14px 14px 12px;
+    margin-bottom:10px;
+  }
+  .card h3{
+    margin:0 0 4px;
+    font-size:1.02rem;
+    font-weight:600;
+    color:var(--teal-deep);
+  }
+  .card .addr{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    font-size:0.86rem;
+    color:var(--muted);
+    margin:0 0 8px;
+  }
+  .tag-row{
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px;
+    margin-bottom:10px;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  .tag{
+    font-size:0.72rem;
+    padding:3px 9px;
+    border-radius:999px;
+    background:#eef2ea;
+    color:var(--teal-deep);
+    white-space:nowrap;
+  }
+  .tag.warn{background:#fbeadb; color:var(--amber);}
+  .tag.dist{background:var(--teal-deep); color:#fff;}
+  .tag.tmx{background:#fbe6b8; color:#7a4e0a;}
+
+  .notice-banner{
+    background:#fff6e8;
+    border:1px solid #ecd9ad;
+    border-radius:var(--radius);
+    padding:10px 12px;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    font-size:0.8rem;
+    color:#6b5222;
+    margin-bottom:12px;
+  }
+  .updated-line{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    font-size:0.76rem;
+    color:var(--muted);
+    background:#f0e8e3;
+    border-radius:8px;
+    padding:7px 10px;
+    margin-bottom:12px;
+  }
+
+  .action-row{
+    display:flex;
+    gap:8px;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  .action-row a{
+    flex:1;
+    text-align:center;
+    padding:8px 8px;
+    border-radius:8px;
+    text-decoration:none;
+    font-size:0.83rem;
+    font-weight:600;
+    border:1px solid var(--line);
+    color:var(--teal-deep);
+  }
+  .action-row a.primary{
+    background:var(--teal);
+    border-color:var(--teal);
+    color:#fff;
+  }
+
+  .spec-list{
+    margin-top:2px;
+    padding-top:8px;
+    border-top:1px dashed var(--line);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    font-size:0.82rem;
+    color:var(--ink);
+  }
+  .spec-list summary{cursor:pointer; color:var(--teal); font-weight:600;}
+  .spec-item{padding:6px 0; border-bottom:1px solid #f0ede2;}
+  .spec-item:last-child{border-bottom:none;}
+  .spec-name{font-weight:600;}
+  .spec-meta{color:var(--muted); font-size:0.78rem;}
+
+  .hosp-link{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    font-size:0.78rem;
+    color:var(--muted);
+  }
+
+  .empty{
+    text-align:center;
+    padding:40px 20px;
+    color:var(--muted);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+
+  footer{
+    text-align:center;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    font-size:0.72rem;
+    color:var(--muted);
+    padding:20px;
+  }
+
+  .load-more{
+    display:block;
+    width:100%;
+    margin:6px 0 20px;
+    padding:11px;
+    border-radius:var(--radius);
+    border:1px solid var(--teal);
+    background:transparent;
+    color:var(--teal-deep);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    font-weight:600;
+    cursor:pointer;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>GE Panel Finder</h1>
+  <p>Find panel hospitals, specialists and checkup clinics near you</p>
+  <div class="tabs sans">
+    <button class="tab-btn active" data-tab="hospitals">Hospitals</button>
+    <button class="tab-btn" data-tab="specialists">Specialists</button>
+    <button class="tab-btn" data-tab="clinics">Checkup Clinics</button>
+  </div>
+</header>
+
+<main>
+
+  <div id="hospitals-view">
+    <div class="updated-line">Hospital list last updated 3 Aug 2026. Great Eastern updates this list periodically — please confirm with the hospital if it's been a while since you last checked.</div>
+    <div class="controls">
+      <div class="search-row">
+        <input type="search" id="hosp-search" placeholder="Search hospital name or town…">
+        <select id="hosp-state"><option value="">All states</option></select>
+      </div>
+      <button class="locate-btn" id="hosp-locate">📍 Sort by distance from me</button>
+      <div class="status-line" id="hosp-status"></div>
+    </div>
+    <div class="count-line" id="hosp-count"></div>
+    <div id="hosp-results"></div>
+    <button class="load-more" id="hosp-more" style="display:none;">Show more</button>
+  </div>
+
+  <div id="specialists-view" style="display:none;">
+    <div class="updated-line">Specialist list last updated 1 Sep 2026. Status of specialists (resident/visiting) is subject to change — call ahead to confirm before visiting.</div>
+    <div class="controls">
+      <div class="search-row">
+        <input type="search" id="spec-search" placeholder="Search doctor, specialty or hospital…">
+      </div>
+      <div class="search-row">
+        <select id="spec-specialty" style="max-width:none;"><option value="">All specialties</option></select>
+        <select id="spec-state"><option value="">All states</option></select>
+      </div>
+    </div>
+    <div class="count-line" id="spec-count"></div>
+    <div id="spec-results"></div>
+    <button class="load-more" id="spec-more" style="display:none;">Show more</button>
+  </div>
+
+  <div id="clinics-view" style="display:none;">
+    <div class="notice-banner sans">
+      <strong>For new policy applications &amp; upgrades only.</strong> These clinics are where a client goes for a medical checkup requested during underwriting — not for treatment or insurance claims. For claims, use the Hospitals or Specialists tabs.
+    </div>
+    <div class="updated-line">Clinic list for August 2026, as at 1 Aug 2026. This list is updated monthly and changes without notice — always call ahead to confirm before sending a client.</div>
+    <div class="controls">
+      <div class="search-row">
+        <input type="search" id="clinic-search" placeholder="Search clinic, doctor or town…">
+        <select id="clinic-state"><option value="">All states</option></select>
+      </div>
+      <button class="locate-btn" id="clinic-locate">📍 Sort by distance from me</button>
+      <div class="status-line" id="clinic-status"></div>
+    </div>
+    <div class="count-line" id="clinic-count"></div>
+    <div id="clinic-results"></div>
+    <button class="load-more" id="clinic-more" style="display:none;">Show more</button>
+  </div>
+
+</main>
+
+<footer>
+  Panel listings are updated periodically — please confirm with the hospital before travelling, and call ahead for specialist appointments.
+</footer>
+
+<script>
+(function(){
+  "use strict";
+
+  var state = {
+    hospitals: [],
+    specialists: [],
+    clinics: [],
+    meta: {specialties:[], states:[]},
+    clinicsMeta: {states:[], facility_legend:{}},
+    userLoc: null,
+    clinicUserLoc: null,
+    hospShown: 30,
+    specShown: 30,
+    clinicShown: 30,
+    tab: 'hospitals'
+  };
+
+  function haversine(lat1, lon1, lat2, lon2){
+    function toRad(d){ return d * Math.PI / 180; }
+    var R = 6371;
+    var dLat = toRad(lat2-lat1);
+    var dLon = toRad(lon2-lon1);
+    var a = Math.sin(dLat/2)*Math.sin(dLat/2) +
+            Math.cos(toRad(lat1))*Math.cos(toRad(lat2)) *
+            Math.sin(dLon/2)*Math.sin(dLon/2);
+    var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c;
+  }
+
+  function escapeHtml(s){
+    return (s||'').replace(/[&<>"']/g, function(c){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+    });
+  }
+
+  function telHref(t){ return 'tel:' + t.replace(/[^\d+]/g,''); }
+  function mapsHref(addr, name){
+    return 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(name + ', ' + addr);
+  }
+
+  // ---------- data load ----------
+  Promise.all([
+    fetch('data/hospitals.json').then(function(r){ return r.json(); }),
+    fetch('data/specialists.json').then(function(r){ return r.json(); }),
+    fetch('data/meta.json').then(function(r){ return r.json(); }),
+    fetch('data/clinics.json').then(function(r){ return r.json(); }),
+    fetch('data/clinics-meta.json').then(function(r){ return r.json(); })
+  ]).then(function(results){
+    state.hospitals = results[0];
+    state.specialists = results[1];
+    state.meta = results[2];
+    state.clinics = results[3];
+    state.clinicsMeta = results[4];
+    populateFilters();
+    renderHospitals();
+    renderSpecialists();
+    renderClinics();
+  }).catch(function(err){
+    document.getElementById('hosp-results').innerHTML =
+      '<div class="empty">Could not load panel data. If you\'re running this locally, serve it over http:// (e.g. netlify dev) rather than opening index.html directly as a file.</div>';
+    console.error(err);
+  });
+
+  function populateFilters(){
+    var hospStateSel = document.getElementById('hosp-state');
+    var specStateSel = document.getElementById('spec-state');
+    var specSpecSel = document.getElementById('spec-specialty');
+    state.meta.states.forEach(function(s){
+      var o1 = document.createElement('option'); o1.value = s; o1.textContent = s;
+      hospStateSel.appendChild(o1);
+      var o2 = document.createElement('option'); o2.value = s; o2.textContent = s;
+      specStateSel.appendChild(o2);
+    });
+    state.meta.specialties.forEach(function(s){
+      var o = document.createElement('option'); o.value = s; o.textContent = s;
+      specSpecSel.appendChild(o);
+    });
+    var clinicStateSel = document.getElementById('clinic-state');
+    (state.clinicsMeta.states || []).forEach(function(s){
+      var o = document.createElement('option'); o.value = s; o.textContent = s;
+      clinicStateSel.appendChild(o);
+    });
+  }
+
+  // ---------- tabs ----------
+  document.querySelectorAll('.tab-btn').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      document.querySelectorAll('.tab-btn').forEach(function(b){ b.classList.remove('active'); });
+      btn.classList.add('active');
+      state.tab = btn.dataset.tab;
+      document.getElementById('hospitals-view').style.display = state.tab === 'hospitals' ? 'block' : 'none';
+      document.getElementById('specialists-view').style.display = state.tab === 'specialists' ? 'block' : 'none';
+      document.getElementById('clinics-view').style.display = state.tab === 'clinics' ? 'block' : 'none';
+    });
+  });
+
+  // ---------- hospitals ----------
+  function specialistsFor(hospitalName){
+    return state.specialists.filter(function(s){ return s.hospital_canonical === hospitalName; });
+  }
+
+  function getFilteredHospitals(){
+    var q = document.getElementById('hosp-search').value.trim().toLowerCase();
+    var st = document.getElementById('hosp-state').value;
+    var list = state.hospitals.filter(function(h){
+      if (st && h.state !== st) return false;
+      if (!q) return true;
+      return h.name.toLowerCase().indexOf(q) !== -1 ||
+             h.address.toLowerCase().indexOf(q) !== -1 ||
+             (h.town||'').toLowerCase().indexOf(q) !== -1;
+    });
+    if (state.userLoc){
+      list = list.map(function(h){
+        var d = (h.lat!=null) ? haversine(state.userLoc.lat, state.userLoc.lng, h.lat, h.lng) : null;
+        return Object.assign({}, h, {_dist: d});
+      });
+      list.sort(function(a,b){
+        if (a._dist==null) return 1;
+        if (b._dist==null) return -1;
+        return a._dist - b._dist;
+      });
+    } else {
+      list.sort(function(a,b){ return a.name.localeCompare(b.name); });
+    }
+    return list;
+  }
+
+  function hospitalCard(h){
+    var specs = specialistsFor(h.name);
+    var specCount = specs.length;
+    var distTag = (h._dist!=null) ? '<span class="tag dist">~' + h._dist.toFixed(1) + ' km</span>' : '';
+    var depositTag = h.deposit === 'Yes'
+      ? '<span class="tag warn">Deposit on admission</span>'
+      : '<span class="tag">No deposit on admission</span>';
+
+    var specHtml = '';
+    if (specCount > 0){
+      var items = specs.slice(0, 500).map(function(s){
+        return '<div class="spec-item"><div class="spec-name">' + escapeHtml(s.name) + '</div>' +
+          '<div class="spec-meta">' + escapeHtml(s.speciality) + ' · ' + escapeHtml(s.type) + '</div></div>';
+      }).join('');
+      specHtml = '<details class="spec-list"><summary>' + specCount + ' panel specialist' + (specCount===1?'':'s') + ' here</summary>' + items + '</details>';
+    }
+
+    return '<div class="card">' +
+      '<h3>' + escapeHtml(h.name) + '</h3>' +
+      '<p class="addr">' + escapeHtml(h.address) + '</p>' +
+      '<div class="tag-row">' + distTag + depositTag + '<span class="tag">' + escapeHtml(h.state) + '</span></div>' +
+      '<div class="action-row">' +
+        '<a href="' + telHref(h.tel) + '" class="primary">Call ' + escapeHtml(h.tel) + '</a>' +
+        '<a href="' + mapsHref(h.address, h.name) + '" target="_blank" rel="noopener">Directions</a>' +
+      '</div>' +
+      specHtml +
+      '</div>';
+  }
+
+  function renderHospitals(){
+    var list = getFilteredHospitals();
+    var countEl = document.getElementById('hosp-count');
+    countEl.textContent = list.length + ' hospital' + (list.length===1?'':'s') + (state.userLoc ? ' · sorted by distance' : ' · sorted alphabetically');
+    var shown = list.slice(0, state.hospShown);
+    var out = document.getElementById('hosp-results');
+    if (shown.length === 0){
+      out.innerHTML = '<div class="empty">No hospitals match your search.</div>';
+    } else {
+      out.innerHTML = shown.map(hospitalCard).join('');
+    }
+    document.getElementById('hosp-more').style.display = (list.length > state.hospShown) ? 'block' : 'none';
+  }
+
+  document.getElementById('hosp-search').addEventListener('input', function(){ state.hospShown = 30; renderHospitals(); });
+  document.getElementById('hosp-state').addEventListener('change', function(){ state.hospShown = 30; renderHospitals(); });
+  document.getElementById('hosp-more').addEventListener('click', function(){ state.hospShown += 30; renderHospitals(); });
+
+  document.getElementById('hosp-locate').addEventListener('click', function(){
+    var btn = this;
+    var statusEl = document.getElementById('hosp-status');
+    if (!navigator.geolocation){
+      statusEl.textContent = 'Geolocation is not supported on this device/browser.';
+      return;
+    }
+    statusEl.textContent = 'Getting your location…';
+    navigator.geolocation.getCurrentPosition(function(pos){
+      state.userLoc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+      btn.classList.add('on');
+      btn.textContent = '📍 Sorted by distance';
+      statusEl.textContent = 'Distances are approximate (nearest town centre), not door-to-door.';
+      state.hospShown = 30;
+      renderHospitals();
+    }, function(err){
+      statusEl.textContent = 'Could not get your location (' + err.message + '). You can still search by name or state.';
+    }, { enableHighAccuracy:true, timeout:8000 });
+  });
+
+  // ---------- specialists ----------
+  function getFilteredSpecialists(){
+    var q = document.getElementById('spec-search').value.trim().toLowerCase();
+    var spec = document.getElementById('spec-specialty').value;
+    var st = document.getElementById('spec-state').value;
+    return state.specialists.filter(function(s){
+      if (spec && s.speciality.split(';').map(function(x){return x.trim();}).indexOf(spec) === -1) return false;
+      if (st && s.state !== st) return false;
+      if (!q) return true;
+      return s.name.toLowerCase().indexOf(q) !== -1 ||
+             s.speciality.toLowerCase().indexOf(q) !== -1 ||
+             (s.hospital_canonical||'').toLowerCase().indexOf(q) !== -1;
+    });
+  }
+
+  function specialistCard(s){
+    var hosp = state.hospitals.find(function(h){ return h.name === s.hospital_canonical; });
+    var hospLine = hosp
+      ? '<div class="hosp-link">' + escapeHtml(hosp.name) + ' · ' + escapeHtml(hosp.address) + '</div>'
+      : '<div class="hosp-link">' + escapeHtml(s.hospital_canonical || 'Hospital name unavailable') + '</div>';
+    var actions = hosp
+      ? '<div class="action-row">' +
+          '<a href="' + telHref(hosp.tel) + '" class="primary">Call hospital</a>' +
+          '<a href="' + mapsHref(hosp.address, hosp.name) + '" target="_blank" rel="noopener">Directions</a>' +
+        '</div>'
+      : '';
+    return '<div class="card">' +
+      '<h3>' + escapeHtml(s.name) + '</h3>' +
+      '<p class="addr">' + escapeHtml(s.speciality) + '</p>' +
+      '<div class="tag-row"><span class="tag">' + escapeHtml(s.type) + '</span><span class="tag">' + escapeHtml(s.gender) + '</span>' +
+        (s.state ? '<span class="tag">' + escapeHtml(s.state) + '</span>' : '') + '</div>' +
+      hospLine +
+      actions +
+      '</div>';
+  }
+
+  function renderSpecialists(){
+    var list = getFilteredSpecialists();
+    document.getElementById('spec-count').textContent = list.length + ' specialist' + (list.length===1?'':'s') + ' found';
+    var shown = list.slice(0, state.specShown);
+    var out = document.getElementById('spec-results');
+    if (shown.length === 0){
+      out.innerHTML = '<div class="empty">No specialists match your search.</div>';
+    } else {
+      out.innerHTML = shown.map(specialistCard).join('');
+    }
+    document.getElementById('spec-more').style.display = (list.length > state.specShown) ? 'block' : 'none';
+  }
+
+  document.getElementById('spec-search').addEventListener('input', function(){ state.specShown = 30; renderSpecialists(); });
+  document.getElementById('spec-specialty').addEventListener('change', function(){ state.specShown = 30; renderSpecialists(); });
+  document.getElementById('spec-state').addEventListener('change', function(){ state.specShown = 30; renderSpecialists(); });
+  document.getElementById('spec-more').addEventListener('click', function(){ state.specShown += 30; renderSpecialists(); });
+
+  // ---------- checkup clinics ----------
+  function getFilteredClinics(){
+    var q = document.getElementById('clinic-search').value.trim().toLowerCase();
+    var st = document.getElementById('clinic-state').value;
+    var list = state.clinics.filter(function(c){
+      if (st && c.state !== st) return false;
+      if (!q) return true;
+      return c.name.toLowerCase().indexOf(q) !== -1 ||
+             c.address.toLowerCase().indexOf(q) !== -1 ||
+             c.location.toLowerCase().indexOf(q) !== -1 ||
+             (c.doctors||[]).some(function(d){ return d.toLowerCase().indexOf(q) !== -1; });
+    });
+    if (state.clinicUserLoc){
+      list = list.map(function(c){
+        var d = (c.lat!=null) ? haversine(state.clinicUserLoc.lat, state.clinicUserLoc.lng, c.lat, c.lng) : null;
+        return Object.assign({}, c, {_dist: d});
+      });
+      list.sort(function(a,b){
+        if (a._dist==null) return 1;
+        if (b._dist==null) return -1;
+        return a._dist - b._dist;
+      });
+    } else {
+      list.sort(function(a,b){ return a.name.localeCompare(b.name); });
+    }
+    return list;
+  }
+
+  function clinicCard(c){
+    var distTag = (c._dist!=null) ? '<span class="tag dist">~' + c._dist.toFixed(1) + ' km</span>' : '';
+    var tmxTag = c.has_tmx2 ? '<span class="tag tmx">Treadmill ECG (TMX2)</span>' : '';
+    var edocsTag = c.has_edocs ? '<span class="tag">e-Docs</span>' : '';
+    var facTags = (c.facility_codes||[]).map(function(code){
+      var label = state.clinicsMeta.facility_legend[code] || code;
+      return '<span class="tag" title="' + escapeHtml(label) + '">' + escapeHtml(code) + '</span>';
+    }).join('');
+    var doctorsHtml = (c.doctors||[]).length
+      ? '<div class="hosp-link">' + (c.doctors||[]).map(escapeHtml).join(', ') + '</div>'
+      : '';
+    return '<div class="card">' +
+      '<h3>' + escapeHtml(c.name) + '</h3>' +
+      '<p class="addr">' + escapeHtml(c.address) + '</p>' +
+      '<p class="addr" style="margin-top:-6px;">' + escapeHtml(c.hours) + '</p>' +
+      '<div class="tag-row">' + distTag + tmxTag + edocsTag + '<span class="tag">' + escapeHtml(c.state) + '</span></div>' +
+      '<div class="tag-row">' + facTags + '</div>' +
+      '<div class="action-row">' +
+        '<a href="' + telHref(c.contact.split('/')[0]) + '" class="primary">Call ' + escapeHtml(c.contact) + '</a>' +
+        '<a href="' + mapsHref(c.address, c.name) + '" target="_blank" rel="noopener">Directions</a>' +
+      '</div>' +
+      doctorsHtml +
+      '</div>';
+  }
+
+  function renderClinics(){
+    var list = getFilteredClinics();
+    var countEl = document.getElementById('clinic-count');
+    countEl.textContent = list.length + ' clinic' + (list.length===1?'':'s') + (state.clinicUserLoc ? ' · sorted by distance' : ' · sorted alphabetically');
+    var shown = list.slice(0, state.clinicShown);
+    var out = document.getElementById('clinic-results');
+    if (shown.length === 0){
+      out.innerHTML = '<div class="empty">No clinics match your search.</div>';
+    } else {
+      out.innerHTML = shown.map(clinicCard).join('');
+    }
+    document.getElementById('clinic-more').style.display = (list.length > state.clinicShown) ? 'block' : 'none';
+  }
+
+  document.getElementById('clinic-search').addEventListener('input', function(){ state.clinicShown = 30; renderClinics(); });
+  document.getElementById('clinic-state').addEventListener('change', function(){ state.clinicShown = 30; renderClinics(); });
+  document.getElementById('clinic-more').addEventListener('click', function(){ state.clinicShown += 30; renderClinics(); });
+
+  document.getElementById('clinic-locate').addEventListener('click', function(){
+    var btn = this;
+    var statusEl = document.getElementById('clinic-status');
+    if (!navigator.geolocation){
+      statusEl.textContent = 'Geolocation is not supported on this device/browser.';
+      return;
+    }
+    statusEl.textContent = 'Getting your location…';
+    navigator.geolocation.getCurrentPosition(function(pos){
+      state.clinicUserLoc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+      btn.classList.add('on');
+      btn.textContent = '📍 Sorted by distance';
+      statusEl.textContent = 'Distances are approximate (nearest town centre), not door-to-door.';
+      state.clinicShown = 30;
+      renderClinics();
+    }, function(err){
+      statusEl.textContent = 'Could not get your location (' + err.message + '). You can still search by name or state.';
+    }, { enableHighAccuracy:true, timeout:8000 });
+  });
+
+})();
+</script>
+
+</body>
+</html>
