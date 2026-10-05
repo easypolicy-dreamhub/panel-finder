@@ -42,5 +42,9 @@ jobs:
             echo "No changes to the data this month — nothing to commit."
           else
             git commit -m "Monthly panel data refresh ($(date -u +%Y-%m-%d))"
+            # If someone pushed other commits to the repo while this run was
+            # in progress, rebase on top of them before pushing, instead of
+            # failing outright.
+            git pull --rebase origin main
             git push
           fi
