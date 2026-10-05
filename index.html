@@ -278,7 +278,7 @@
 <main>
 
   <div id="hospitals-view">
-    <div class="updated-line">Hospital list last updated 3 Aug 2026. Great Eastern updates this list periodically — please confirm with the hospital if it's been a while since you last checked.</div>
+    <div class="updated-line" id="hosp-updated-line">Checking hospital list date…</div>
     <div class="controls">
       <div class="search-row">
         <input type="search" id="hosp-search" placeholder="Search hospital name or town…">
@@ -293,7 +293,7 @@
   </div>
 
   <div id="specialists-view" style="display:none;">
-    <div class="updated-line">Specialist list last updated 1 Sep 2026. Status of specialists (resident/visiting) is subject to change — call ahead to confirm before visiting.</div>
+    <div class="updated-line" id="spec-updated-line">Checking specialist list date…</div>
     <div class="controls">
       <div class="search-row">
         <input type="search" id="spec-search" placeholder="Search doctor, specialty or hospital…">
@@ -312,7 +312,7 @@
     <div class="notice-banner sans">
       <strong>For new policy applications &amp; upgrades only.</strong> These clinics are where a client goes for a medical checkup requested during underwriting — not for treatment or insurance claims. For claims, use the Hospitals or Specialists tabs.
     </div>
-    <div class="updated-line">Clinic list for August 2026, as at 1 Aug 2026. This list is updated monthly and changes without notice — always call ahead to confirm before sending a client.</div>
+    <div class="updated-line" id="clinic-updated-line">Checking clinic list date…</div>
     <div class="controls">
       <div class="search-row">
         <input type="search" id="clinic-search" placeholder="Search clinic, doctor or town…">
@@ -387,6 +387,7 @@
     state.clinics = results[3];
     state.clinicsMeta = results[4];
     populateFilters();
+    renderUpdatedLines();
     renderHospitals();
     renderSpecialists();
     renderClinics();
@@ -415,6 +416,35 @@
       var o = document.createElement('option'); o.value = s; o.textContent = s;
       clinicStateSel.appendChild(o);
     });
+  }
+
+  // Dates come from the PDFs themselves (extracted during the monthly refresh),
+  // not hardcoded here — so these lines never go stale even if nobody edits this file.
+  function formatIsoDate(iso){
+    if (!iso) return null;
+    var parts = iso.split('-');
+    if (parts.length !== 3) return null;
+    var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    var y = parts[0], m = parseInt(parts[1], 10) - 1, d = parseInt(parts[2], 10);
+    return d + ' ' + months[m] + ' ' + y;
+  }
+
+  function renderUpdatedLines(){
+    var hDate = formatIsoDate(state.meta.hospital_updated);
+    var sDate = formatIsoDate(state.meta.specialist_updated);
+    var cDate = formatIsoDate(state.clinicsMeta.clinic_updated);
+
+    var hospEl = document.getElementById('hosp-updated-line');
+    hospEl.textContent = (hDate ? 'Hospital list last updated ' + hDate + '.' : 'Hospital list date unavailable.') +
+      ' Great Eastern updates this list periodically — please confirm with the hospital if it\'s been a while since you last checked.';
+
+    var specEl = document.getElementById('spec-updated-line');
+    specEl.textContent = (sDate ? 'Specialist list last updated ' + sDate + '.' : 'Specialist list date unavailable.') +
+      ' Status of specialists (resident/visiting) is subject to change — call ahead to confirm before visiting.';
+
+    var clinicEl = document.getElementById('clinic-updated-line');
+    clinicEl.textContent = (cDate ? 'Clinic list last updated ' + cDate + '.' : 'Clinic list date unavailable.') +
+      ' This list is updated monthly and changes without notice — always call ahead to confirm before sending a client.';
   }
 
   // ---------- tabs ----------
