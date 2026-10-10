@@ -440,11 +440,12 @@ def main():
     write_json("meta.json", {
         "specialties": specialties, "states": states,
         "hospital_updated": hospital_updated, "specialist_updated": specialist_updated,
+        "hospital_source": links["hospital"], "specialist_source": links["specialist"],
     })
     write_json("clinics.json", clinics)
     write_json("clinics-meta.json", {
         "states": clinic_states, "facility_legend": FACILITY_LEGEND,
-        "clinic_updated": clinic_updated,
+        "clinic_updated": clinic_updated, "clinic_source": links["clinic"],
     })
 
     print("Done.")
