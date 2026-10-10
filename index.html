@@ -181,6 +181,7 @@
     color:#6b5222;
     margin-bottom:12px;
   }
+  .updated-line a{color:inherit;font-weight:600;}
   .updated-line{
     font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
     font-size:0.76rem;
@@ -434,17 +435,31 @@
     var sDate = formatIsoDate(state.meta.specialist_updated);
     var cDate = formatIsoDate(state.clinicsMeta.clinic_updated);
 
-    var hospEl = document.getElementById('hosp-updated-line');
-    hospEl.textContent = (hDate ? 'Hospital list last updated ' + hDate + '.' : 'Hospital list date unavailable.') +
-      ' Great Eastern updates this list periodically — please confirm with the hospital if it\'s been a while since you last checked.';
+    function put(id, text, url){
+      var el = document.getElementById(id);
+      el.textContent = text;
+      if (url){
+        el.appendChild(document.createTextNode(' '));
+        var a = document.createElement('a');
+        a.href = url; a.target = '_blank'; a.rel = 'noopener'; a.textContent = 'Official PDF';
+        el.appendChild(a);
+      }
+    }
 
-    var specEl = document.getElementById('spec-updated-line');
-    specEl.textContent = (sDate ? 'Specialist list last updated ' + sDate + '.' : 'Specialist list date unavailable.') +
-      ' Status of specialists (resident/visiting) is subject to change — call ahead to confirm before visiting.';
+    put('hosp-updated-line',
+      (hDate ? 'Hospital list last updated ' + hDate + '.' : 'Hospital list date unavailable.') +
+      ' Great Eastern updates this list periodically — please confirm with the hospital if it\'s been a while since you last checked.',
+      state.meta.hospital_source);
 
-    var clinicEl = document.getElementById('clinic-updated-line');
-    clinicEl.textContent = (cDate ? 'Clinic list last updated ' + cDate + '.' : 'Clinic list date unavailable.') +
-      ' This list is updated monthly and changes without notice — always call ahead to confirm before sending a client.';
+    put('spec-updated-line',
+      (sDate ? 'Specialist list last updated ' + sDate + '.' : 'Specialist list date unavailable.') +
+      ' Status of specialists (resident/visiting) is subject to change — call ahead to confirm before visiting.',
+      state.meta.specialist_source);
+
+    put('clinic-updated-line',
+      (cDate ? 'Clinic list last updated ' + cDate + '.' : 'Clinic list date unavailable.') +
+      ' This list is updated monthly and changes without notice — always call ahead to confirm before sending a client.',
+      state.clinicsMeta.clinic_source);
   }
 
   // ---------- tabs ----------
