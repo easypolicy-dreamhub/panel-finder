@@ -5,7 +5,7 @@ on:
     # Runs at 03:00 UTC (11:00 AM Malaysia time) on the 2nd of every month.
     # The 2nd (not the 1st) gives Great Eastern a day's buffer in case they
     # publish the new month's PDFs a little late.
-    - cron: "0 3 2 * *"
+    - cron: "0 3 1,16 * *"
   # Lets you trigger it manually from the Actions tab too, for testing.
   workflow_dispatch:
 
